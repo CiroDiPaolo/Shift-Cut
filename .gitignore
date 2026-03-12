@@ -1,0 +1,25 @@
+# Build
+/target/
+
+# IDE
+/.idea/
+*.iml
+
+# OS
+Thumbs.db
+.DS_Store
+
+# logs
+logs/
+
+# dotenv
+.env
+.env.local
+.env.*.local
+
+# local maven wrapper caches
+.mvn/
+
+# other
+*.class
+
