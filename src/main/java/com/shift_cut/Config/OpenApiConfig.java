@@ -27,9 +27,11 @@ public class OpenApiConfig {
                                 "- Usuario ADMIN creado automáticamente la primera vez\n\n" +
                                 "**IMPORTANTE:** Para probar endpoints protegidos, primero obtené un token en /auth/login y usalo en el botón Authorize de Swagger UI.")
                         .version("1.0.0")
+                        .termsOfService("https://github.com/CiroDiPaolo/Shift-Cut/blob/main/LICENSE")
                         .contact(new Contact()
                                 .name("Ciro - Shift Cut Dev")
-                                .email("admin@admin.com"))
+                                .email("admin@admin.com")
+                                .url("https://github.com/CiroDiPaolo/Shift-Cut"))
                         .license(new License()
                                 .name("MIT License")
                                 .url("https://opensource.org/licenses/MIT")))
