@@ -5,6 +5,7 @@ import com.shift_cut.Config.Auth.LoginRequest;
 import com.shift_cut.Config.Auth.RegisterRequest;
 import com.shift_cut.Config.Security.JwtService;
 import com.shift_cut.Exceptions.UserAlreadyExistsException;
+import com.shift_cut.Mapper.AuthMapper;
 import com.shift_cut.Model.DTO.AuthResponse;
 import com.shift_cut.Model.Enum.Role;
 import com.shift_cut.Model.UserEntity;
@@ -42,6 +43,9 @@ class AuthServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private AuthMapper authMapper;
+
     @InjectMocks
     private AuthService authService;
 
@@ -57,6 +61,12 @@ class AuthServiceTest {
                 .role(Role.USER)
                 .status(true)
                 .build();
+
+        // Stub general para el mapper usado en register (lenient para evitar fallos por stubbings no usados)
+        org.mockito.Mockito.lenient().when(authMapper.toEntity(any(RegisterRequest.class))).thenAnswer(inv -> {
+            RegisterRequest r = inv.getArgument(0);
+            return UserEntity.builder().username(r.getUsername()).email(r.getEmail()).build();
+        });
     }
 
     // ── login ────────────────────────────────────────────────────────────────
@@ -175,4 +185,3 @@ class AuthServiceTest {
         verify(userEntityService).createUserEntity(argThat(u -> u.getRole() == Role.USER));
     }
 }
-

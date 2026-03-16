@@ -1,6 +1,7 @@
 package com.shift_cut.Config.Auth;
 
 import com.shift_cut.Config.Security.JwtService;
+import com.shift_cut.Mapper.AuthMapper;
 import com.shift_cut.Model.DTO.AuthResponse;
 import com.shift_cut.Model.Enum.Role;
 import com.shift_cut.Model.UserEntity;
@@ -22,6 +23,7 @@ public class AuthService {
     private final UserEntityService userService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final AuthMapper authMapper;
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
@@ -42,13 +44,12 @@ public class AuthService {
         if (userService.findByUsernameOptional(request.getUsername()).isPresent()) {
             throw new UserAlreadyExistsException("El nombre de usuario ya está registrado");
         }
-        UserEntity user = UserEntity.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
-                .status(true)
-                .build();
+
+        UserEntity user = authMapper.toEntity(request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(Role.USER);
+        user.setStatus(true);
+
         try {
             userService.createUserEntity(user);
         } catch (DataIntegrityViolationException e) {

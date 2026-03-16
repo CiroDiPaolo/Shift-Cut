@@ -2,6 +2,7 @@ package com.shift_cut.Service;
 
 import com.shift_cut.Exceptions.UserAlreadyExistsException;
 import com.shift_cut.Exceptions.UserNotFound;
+import com.shift_cut.Mapper.UserMapper;
 import com.shift_cut.Model.DTO.UserDTO;
 import com.shift_cut.Model.Enum.Role;
 import com.shift_cut.Model.UserEntity;
@@ -33,6 +34,9 @@ class UserEntityServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private UserMapper userMapper;
 
     @InjectMocks
     private UserEntityService userEntityService;
@@ -69,6 +73,7 @@ class UserEntityServiceTest {
     @DisplayName("getUserEntityById: retorna DTO cuando el usuario existe")
     void getUserEntityById_whenExists_returnsDTO() {
         when(userEntityRepository.findById(2L)).thenReturn(Optional.of(regularUser));
+        when(userMapper.toDto(regularUser)).thenReturn(UserDTO.builder().id(2L).username("juanperez").email("juan@user.com").role(Role.USER).build());
 
         UserDTO result = userEntityService.getUserEntityById(2L);
 
@@ -96,6 +101,8 @@ class UserEntityServiceTest {
     @DisplayName("getAllUsers: retorna todos los usuarios como DTOs")
     void getAllUsers_returnsList() {
         when(userEntityRepository.findAll()).thenReturn(List.of(adminUser, regularUser));
+        when(userMapper.toDto(adminUser)).thenReturn(UserDTO.builder().email("admin@admin.com").build());
+        when(userMapper.toDto(regularUser)).thenReturn(UserDTO.builder().email("juan@user.com").build());
 
         List<UserDTO> result = userEntityService.getAllUsers();
 
@@ -121,6 +128,7 @@ class UserEntityServiceTest {
     @DisplayName("getUserByUsername: retorna DTO cuando el usuario existe")
     void getUserByUsername_whenExists_returnsDTO() {
         when(userEntityRepository.findByUsername("juanperez")).thenReturn(Optional.of(regularUser));
+        when(userMapper.toDto(regularUser)).thenReturn(UserDTO.builder().username("juanperez").build());
 
         UserDTO result = userEntityService.getUserByUsername("juanperez");
 
@@ -143,6 +151,7 @@ class UserEntityServiceTest {
     @DisplayName("getUserByEmailDTO: retorna DTO cuando el email existe")
     void getUserByEmailDTO_whenExists_returnsDTO() {
         when(userEntityRepository.findByEmail("juan@user.com")).thenReturn(Optional.of(regularUser));
+        when(userMapper.toDto(regularUser)).thenReturn(UserDTO.builder().email("juan@user.com").build());
 
         UserDTO result = userEntityService.getUserByEmailDTO("juan@user.com");
 
@@ -220,6 +229,10 @@ class UserEntityServiceTest {
         when(userEntityRepository.findByEmail("newemail@admin.com")).thenReturn(Optional.empty());
         when(userEntityRepository.findByUsername("newUsername")).thenReturn(Optional.empty());
         when(userEntityRepository.save(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(userMapper.toDto(any(UserEntity.class))).thenAnswer(inv -> {
+            UserEntity u = inv.getArgument(0);
+            return UserDTO.builder().username(u.getUsername()).email(u.getEmail()).role(u.getRole()).build();
+        });
 
         UserDTO result = userEntityService.updateUserEntity(2L, updatedData);
 
@@ -250,6 +263,10 @@ class UserEntityServiceTest {
         // email igual al existente → no busca duplicado, no mockear findByEmail
         when(userEntityRepository.findByUsername("nuevoUsername")).thenReturn(Optional.empty());
         when(userEntityRepository.save(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(userMapper.toDto(any(UserEntity.class))).thenAnswer(inv -> {
+            UserEntity u = inv.getArgument(0);
+            return UserDTO.builder().username(u.getUsername()).email(u.getEmail()).role(u.getRole()).build();
+        });
 
         UserDTO result = userEntityService.updateUserEntity(2L, updatedData);
 
@@ -317,4 +334,3 @@ class UserEntityServiceTest {
         verifyNoInteractions(userEntityRepository);
     }
 }
-

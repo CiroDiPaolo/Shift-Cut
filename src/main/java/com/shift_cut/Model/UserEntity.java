@@ -51,6 +51,7 @@ public class UserEntity implements UserDetails {
     private Role role;
 
     @Column(nullable = false)
+    @Builder.Default
     @Schema(description = "Estado de la cuenta (true = activa)", example = "true")
     private boolean status = true;
 
