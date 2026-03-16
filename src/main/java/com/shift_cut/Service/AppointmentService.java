@@ -1,9 +1,18 @@
 package com.shift_cut.Service;
 
 import com.shift_cut.Exceptions.AppointmentNotFound;
+import com.shift_cut.Exceptions.UserIsNotBarberException;
+import com.shift_cut.Exceptions.UserNotFound;
+import com.shift_cut.Mapper.AppointmentCreateMapper;
+import com.shift_cut.Mapper.AppointmentMapper;
+import com.shift_cut.Mapper.AppointmentUpdateMapper;
 import com.shift_cut.Model.Appointment;
+import com.shift_cut.Model.DTO.AppointmentCreateDTO;
 import com.shift_cut.Model.DTO.AppointmentDTO;
+import com.shift_cut.Model.DTO.AppointmentUpdateDTO;
+import com.shift_cut.Model.UserEntity;
 import com.shift_cut.Repository.AppointmentRepository;
+import com.shift_cut.Repository.UserEntityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,36 +23,56 @@ import java.util.List;
 public class AppointmentService {
 
     private final AppointmentRepository repo;
-
-    private AppointmentDTO toDTO(Appointment a) {
-        return AppointmentDTO.builder()
-                .id(a.getId())
-                .typeShift(a.getTypeShift())
-                .date(a.getDate())
-                .time(a.getTime())
-                .barberId(a.getBarber().getId())
-                .barberUsername(a.getBarber().getUsername())
-                .userId(a.getUser().getId())
-                .userUsername(a.getUser().getUsername())
-                .build();
-    }
+    private final AppointmentMapper mapper;
+    private final AppointmentCreateMapper createMapper;
+    private final AppointmentUpdateMapper updateMapper;
+    private final UserEntityRepository userRepo;
 
     public AppointmentDTO getAppointmentById(Long id) {
         Appointment appointment = repo.findById(id)
                 .orElseThrow(() -> new AppointmentNotFound("Appointment not found with id: " + id));
-        return toDTO(appointment);
+        return mapper.toDto(appointment);
     }
 
     public List<AppointmentDTO> getAllAppointments() {
-        return repo.findAll().stream().map(this::toDTO).toList();
+        return repo.findAll().stream().map(mapper::toDto).toList();
     }
 
     public List<AppointmentDTO> getAppointmentsByUserId(Long userId) {
-        return repo.findByUser_Id(userId).stream().map(this::toDTO).toList();
+        return repo.findByUser_Id(userId).stream().map(mapper::toDto).toList();
     }
 
     public AppointmentDTO createAppointment(Appointment appointment) {
-        return toDTO(repo.save(appointment));
+        return mapper.toDto(repo.save(appointment));
+    }
+
+    public AppointmentDTO createAppointment(AppointmentCreateDTO dto) {
+        // Primero validar existencia de barber y user y el rol del barber
+        UserEntity user = userRepo.findById(dto.getUserId())
+                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.getUserId()));
+        UserEntity barber = userRepo.findById(dto.getBarberId())
+                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.getBarberId()));
+
+        // Validar rol de barber antes de construir la entidad
+        if (barber.getRole() != com.shift_cut.Model.Enum.Role.BARBER) {
+            throw new UserIsNotBarberException("User with id: " + barber.getId() + " is not a barber");
+        }
+
+        // Intentar mapear con MapStruct; si devuelve null, construir manualmente la entidad (fallback seguro)
+        Appointment appointment = createMapper.toEntity(dto);
+        if (appointment == null) {
+            appointment = Appointment.builder()
+                    .typeShift(dto.getTypeShift())
+                    .date(dto.getDate())
+                    .time(dto.getTime())
+                    .build();
+        }
+
+        // Asignar entidades gestionadas
+        appointment.setUser(user);
+        appointment.setBarber(barber);
+
+        return mapper.toDto(repo.save(appointment));
     }
 
     public AppointmentDTO updateAppointment(Long id, Appointment appointment) {
@@ -51,7 +80,28 @@ public class AppointmentService {
             throw new AppointmentNotFound("Appointment not found with id: " + id);
         }
         appointment.setId(id);
-        return toDTO(repo.save(appointment));
+        return mapper.toDto(repo.save(appointment));
+    }
+
+    public AppointmentDTO updateAppointment(Long id, AppointmentUpdateDTO dto) {
+        Appointment existing = repo.findById(id)
+                .orElseThrow(() -> new AppointmentNotFound("Appointment not found with id: " + id));
+        // aplicar cambios sobre la entidad existente
+        updateMapper.updateFromDto(dto, existing);
+        // Validar existencia de barber y user y asignar las entidades gestionadas
+        UserEntity user = userRepo.findById(dto.getUserId())
+                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.getUserId()));
+        UserEntity barber = userRepo.findById(dto.getBarberId())
+                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.getBarberId()));
+
+        // Validar rol de barber
+        if (barber.getRole() != com.shift_cut.Model.Enum.Role.BARBER) {
+            throw new com.shift_cut.Exceptions.UserIsNotBarberException("User with id: " + barber.getId() + " is not a barber");
+        }
+        existing.setUser(user);
+        existing.setBarber(barber);
+
+        return mapper.toDto(repo.save(existing));
     }
 
     public void deleteAppointment(Long id) {

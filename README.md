@@ -19,6 +19,12 @@ API REST para gestión de turnos de una barbería, construida con **Spring Boot*
 
 ---
 
+## Recomendaciones sobre JWT
+
+- En producción **asegurate** de proveer una clave JWT (`jwt.secret`) con al menos 32 bytes (256 bits). El proyecto contiene una medida temporal para tests que deriva SHA-256 del secreto cuando es muy corto, pero en producción debe usarse una clave segura y larga.
+
+---
+
 ## Usuario administrador por defecto
 
 La primera vez que se levanta el sistema, se crea automáticamente un usuario administrador con las siguientes credenciales:
@@ -124,7 +130,6 @@ Este proyecto incluye documentación interactiva de la API generada automáticam
 
 #### Ejemplo de registro
 ```json
-POST /auth/register
 {
   "username": "juanperez",
   "email": "juan@example.com",
@@ -134,14 +139,13 @@ POST /auth/register
 
 #### Ejemplo de login
 ```json
-POST /auth/login
 {
   "email": "juan@example.com",
   "password": "123456"
 }
 ```
 
-**Respuesta:**
+**Respuesta (ejemplo):**
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiJ9..."
@@ -165,7 +169,6 @@ POST /auth/login
 
 #### Como ADMIN (puede cambiar cualquier campo, incluso rol y status):
 ```json
-PUT /api/user/2
 {
   "username": "barbero1",
   "email": "barbero1@barberia.com",
@@ -177,14 +180,14 @@ PUT /api/user/2
 
 #### Como USER (solo puede cambiar username, email y password):
 ```json
-PUT /api/user/3
 {
   "username": "juanperez",
   "email": "juan_nuevo@example.com",
   "password": "nuevoPassword456"
-  // Si se envía "role" o "status", serán ignorados
 }
 ```
+
+Nota: Si se envía `role` o `status` en la petición como USER, serán ignorados por el controlador.
 
 #### Respuesta exitosa:
 ```json
@@ -247,6 +250,18 @@ PUT /api/user/3
 ```bash
 ./mvnw spring-boot:run
 ```
+
+---
+
+## Correr tests
+
+Para ejecutar la suite de tests localmente (se puede setear `JWT_SECRET` temporalmente para pruebas):
+
+```powershell
+$env:JWT_SECRET='tu_secreto_largo_32_plus_bytes'; .\mvnw test
+```
+
+En CI/producción, exportá `JWT_SECRET` como variable de entorno segura antes de ejecutar la aplicación.
 
 ---
 
