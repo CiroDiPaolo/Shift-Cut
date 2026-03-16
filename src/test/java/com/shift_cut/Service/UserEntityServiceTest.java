@@ -73,15 +73,15 @@ class UserEntityServiceTest {
     @DisplayName("getUserEntityById: retorna DTO cuando el usuario existe")
     void getUserEntityById_whenExists_returnsDTO() {
         when(userEntityRepository.findById(2L)).thenReturn(Optional.of(regularUser));
-        when(userMapper.toDto(regularUser)).thenReturn(UserDTO.builder().id(2L).username("juanperez").email("juan@user.com").role(Role.USER).build());
+        when(userMapper.toDto(regularUser)).thenReturn(new UserDTO(2L, "juanperez", "juan@user.com", Role.USER, true));
 
         UserDTO result = userEntityService.getUserEntityById(2L);
 
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(2L);
-        assertThat(result.getUsername()).isEqualTo("juanperez");
-        assertThat(result.getEmail()).isEqualTo("juan@user.com");
-        assertThat(result.getRole()).isEqualTo(Role.USER);
+        assertThat(result.id()).isEqualTo(2L);
+        assertThat(result.username()).isEqualTo("juanperez");
+        assertThat(result.email()).isEqualTo("juan@user.com");
+        assertThat(result.role()).isEqualTo(Role.USER);
         verify(userEntityRepository).findById(2L);
     }
 
@@ -101,13 +101,13 @@ class UserEntityServiceTest {
     @DisplayName("getAllUsers: retorna todos los usuarios como DTOs")
     void getAllUsers_returnsList() {
         when(userEntityRepository.findAll()).thenReturn(List.of(adminUser, regularUser));
-        when(userMapper.toDto(adminUser)).thenReturn(UserDTO.builder().email("admin@admin.com").build());
-        when(userMapper.toDto(regularUser)).thenReturn(UserDTO.builder().email("juan@user.com").build());
+        when(userMapper.toDto(adminUser)).thenReturn(new UserDTO(null, null, "admin@admin.com", null, false));
+        when(userMapper.toDto(regularUser)).thenReturn(new UserDTO(null, null, "juan@user.com", null, false));
 
         List<UserDTO> result = userEntityService.getAllUsers();
 
         assertThat(result).hasSize(2);
-        assertThat(result).extracting(UserDTO::getEmail)
+        assertThat(result).extracting(UserDTO::email)
                 .containsExactlyInAnyOrder("admin@admin.com", "juan@user.com");
         verify(userEntityRepository).findAll();
     }
@@ -128,11 +128,11 @@ class UserEntityServiceTest {
     @DisplayName("getUserByUsername: retorna DTO cuando el usuario existe")
     void getUserByUsername_whenExists_returnsDTO() {
         when(userEntityRepository.findByUsername("juanperez")).thenReturn(Optional.of(regularUser));
-        when(userMapper.toDto(regularUser)).thenReturn(UserDTO.builder().username("juanperez").build());
+        when(userMapper.toDto(regularUser)).thenReturn(new UserDTO(null, "juanperez", null, null, false));
 
         UserDTO result = userEntityService.getUserByUsername("juanperez");
 
-        assertThat(result.getUsername()).isEqualTo("juanperez");
+        assertThat(result.username()).isEqualTo("juanperez");
     }
 
     @Test
@@ -151,11 +151,11 @@ class UserEntityServiceTest {
     @DisplayName("getUserByEmailDTO: retorna DTO cuando el email existe")
     void getUserByEmailDTO_whenExists_returnsDTO() {
         when(userEntityRepository.findByEmail("juan@user.com")).thenReturn(Optional.of(regularUser));
-        when(userMapper.toDto(regularUser)).thenReturn(UserDTO.builder().email("juan@user.com").build());
+        when(userMapper.toDto(regularUser)).thenReturn(new UserDTO(null, null, "juan@user.com", null, false));
 
         UserDTO result = userEntityService.getUserByEmailDTO("juan@user.com");
 
-        assertThat(result.getEmail()).isEqualTo("juan@user.com");
+        assertThat(result.email()).isEqualTo("juan@user.com");
     }
 
     @Test
@@ -231,14 +231,14 @@ class UserEntityServiceTest {
         when(userEntityRepository.save(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(userMapper.toDto(any(UserEntity.class))).thenAnswer(inv -> {
             UserEntity u = inv.getArgument(0);
-            return UserDTO.builder().username(u.getUsername()).email(u.getEmail()).role(u.getRole()).build();
+            return new UserDTO(null, u.getUsername(), u.getEmail(), u.getRole(), u.isStatus());
         });
 
         UserDTO result = userEntityService.updateUserEntity(2L, updatedData);
 
-        assertThat(result.getUsername()).isEqualTo("newUsername");
-        assertThat(result.getEmail()).isEqualTo("newemail@admin.com");
-        assertThat(result.getRole()).isEqualTo(Role.BARBER);
+        assertThat(result.username()).isEqualTo("newUsername");
+        assertThat(result.email()).isEqualTo("newemail@admin.com");
+        assertThat(result.role()).isEqualTo(Role.BARBER);
     }
 
     @Test
@@ -265,13 +265,13 @@ class UserEntityServiceTest {
         when(userEntityRepository.save(any(UserEntity.class))).thenAnswer(inv -> inv.getArgument(0));
         when(userMapper.toDto(any(UserEntity.class))).thenAnswer(inv -> {
             UserEntity u = inv.getArgument(0);
-            return UserDTO.builder().username(u.getUsername()).email(u.getEmail()).role(u.getRole()).build();
+            return new UserDTO(null, u.getUsername(), u.getEmail(), u.getRole(), u.isStatus());
         });
 
         UserDTO result = userEntityService.updateUserEntity(2L, updatedData);
 
         // El rol NO debe haber cambiado a ADMIN
-        assertThat(result.getRole()).isEqualTo(Role.USER);
+        assertThat(result.role()).isEqualTo(Role.USER);
     }
 
     @Test

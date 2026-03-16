@@ -17,20 +17,20 @@ class AppointmentCreateMapperTest {
 
     @Test
     void toEntity_mapsFieldsAndCreatesUserEntitiesWithIds() {
-        AppointmentCreateDTO dto = AppointmentCreateDTO.builder()
-                .typeShift(com.shift_cut.Model.Enum.ServiceType.HAIR_CUT)
-                .date(LocalDate.of(2026, 7, 1))
-                .time(LocalTime.of(9, 0))
-                .barberId(10L)
-                .userId(20L)
-                .build();
+        AppointmentCreateDTO dto = new AppointmentCreateDTO(
+                com.shift_cut.Model.Enum.ServiceType.HAIR_CUT,
+                LocalDate.of(2026, 7, 1),
+                LocalTime.of(9, 0),
+                10L,
+                20L
+        );
 
         Appointment entity = mapper.toEntity(dto);
 
         assertThat(entity).isNotNull();
-        assertThat(entity.getTypeShift()).isEqualTo(dto.getTypeShift());
-        assertThat(entity.getDate()).isEqualTo(dto.getDate());
-        assertThat(entity.getTime()).isEqualTo(dto.getTime());
+        assertThat(entity.getTypeShift()).isEqualTo(dto.typeShift());
+        assertThat(entity.getDate()).isEqualTo(dto.date());
+        assertThat(entity.getTime()).isEqualTo(dto.time());
         UserEntity barber = entity.getBarber();
         UserEntity user = entity.getUser();
         assertThat(barber).isNotNull();

@@ -69,10 +69,7 @@ class AuthControllerIntegrationTest {
     @Test
     @DisplayName("POST /auth/register: registra usuario nuevo y retorna 201 con token")
     void register_withValidData_returns201WithToken() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("testuser");
-        request.setEmail("testuser@mail.com");
-        request.setPassword("password123");
+        RegisterRequest request = new RegisterRequest("testuser", "testuser@mail.com", "password123");
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -94,10 +91,7 @@ class AuthControllerIntegrationTest {
                 .status(true)
                 .build());
 
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("newuser");
-        request.setEmail("existing@mail.com");
-        request.setPassword("password123");
+        RegisterRequest request = new RegisterRequest("newuser", "existing@mail.com", "password123");
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -108,10 +102,7 @@ class AuthControllerIntegrationTest {
     @Test
     @DisplayName("POST /auth/register: retorna 400 si el email es inválido")
     void register_withInvalidEmail_returns400() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("testuser");
-        request.setEmail("not-an-email");
-        request.setPassword("password123");
+        RegisterRequest request = new RegisterRequest("testuser", "not-an-email", "password123");
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -122,10 +113,7 @@ class AuthControllerIntegrationTest {
     @Test
     @DisplayName("POST /auth/register: retorna 400 si la contraseña es muy corta")
     void register_withShortPassword_returns400() throws Exception {
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("testuser");
-        request.setEmail("testuser@mail.com");
-        request.setPassword("123"); // menos de 6 caracteres
+        RegisterRequest request = new RegisterRequest("testuser", "testuser@mail.com", "123");
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -147,9 +135,7 @@ class AuthControllerIntegrationTest {
                 .status(true)
                 .build());
 
-        LoginRequest request = new LoginRequest();
-        request.setEmail("loginuser@mail.com");
-        request.setPassword("pass123");
+        LoginRequest request = new LoginRequest("loginuser@mail.com", "pass123");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -170,9 +156,7 @@ class AuthControllerIntegrationTest {
                 .status(true)
                 .build());
 
-        LoginRequest request = new LoginRequest();
-        request.setEmail("loginuser@mail.com");
-        request.setPassword("WRONGPASSWORD");
+        LoginRequest request = new LoginRequest("loginuser@mail.com", "WRONGPASSWORD");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -183,9 +167,7 @@ class AuthControllerIntegrationTest {
     @Test
     @DisplayName("POST /auth/login: retorna 401 para email inexistente")
     void login_withUnknownEmail_returns401() throws Exception {
-        LoginRequest request = new LoginRequest();
-        request.setEmail("noexiste@mail.com");
-        request.setPassword("pass123");
+        LoginRequest request = new LoginRequest("noexiste@mail.com", "pass123");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -196,9 +178,7 @@ class AuthControllerIntegrationTest {
     @Test
     @DisplayName("POST /auth/login: retorna 400 si el email está vacío")
     void login_withEmptyEmail_returns400() throws Exception {
-        LoginRequest request = new LoginRequest();
-        request.setEmail("");
-        request.setPassword("pass123");
+        LoginRequest request = new LoginRequest("", "pass123");
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

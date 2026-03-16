@@ -26,19 +26,19 @@ class AppointmentUpdateMapperTest {
                 .user(UserEntity.builder().id(2L).build())
                 .build();
 
-        AppointmentUpdateDTO dto = AppointmentUpdateDTO.builder()
-                .typeShift(com.shift_cut.Model.Enum.ServiceType.HAIR_CUT_AND_BEARD)
-                .date(LocalDate.of(2026,5,1))
-                .time(LocalTime.of(14,0))
-                .barberId(10L)
-                .userId(20L)
-                .build();
+        AppointmentUpdateDTO dto = new AppointmentUpdateDTO(
+                com.shift_cut.Model.Enum.ServiceType.HAIR_CUT_AND_BEARD,
+                LocalDate.of(2026,5,1),
+                LocalTime.of(14,0),
+                10L,
+                20L
+        );
 
         mapper.updateFromDto(dto, existing);
 
-        assertThat(existing.getTypeShift()).isEqualTo(dto.getTypeShift());
-        assertThat(existing.getDate()).isEqualTo(dto.getDate());
-        assertThat(existing.getTime()).isEqualTo(dto.getTime());
+        assertThat(existing.getTypeShift()).isEqualTo(dto.typeShift());
+        assertThat(existing.getDate()).isEqualTo(dto.date());
+        assertThat(existing.getTime()).isEqualTo(dto.time());
         assertThat(existing.getBarber()).isNotNull();
         assertThat(existing.getUser()).isNotNull();
         assertThat(existing.getBarber().getId()).isEqualTo(10L);

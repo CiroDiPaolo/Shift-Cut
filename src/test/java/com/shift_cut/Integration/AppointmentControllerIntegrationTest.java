@@ -187,13 +187,13 @@ class AppointmentControllerIntegrationTest {
     @DisplayName("POST /api/appointment: USER puede crear un turno y retorna 201")
     void createAppointment_asUser_returns201() throws Exception {
         // usar DTO para la creación
-        com.shift_cut.Model.DTO.AppointmentCreateDTO newAppointment = com.shift_cut.Model.DTO.AppointmentCreateDTO.builder()
-                .typeShift(ServiceType.HAIR_CUT_AND_BEARD)
-                .date(LocalDate.of(2026, 5, 20))
-                .time(LocalTime.of(14, 0))
-                .barberId(barberUser.getId())
-                .userId(regularUser.getId())
-                .build();
+        com.shift_cut.Model.DTO.AppointmentCreateDTO newAppointment = new com.shift_cut.Model.DTO.AppointmentCreateDTO(
+                ServiceType.HAIR_CUT_AND_BEARD,
+                LocalDate.of(2026, 5, 20),
+                LocalTime.of(14, 0),
+                barberUser.getId(),
+                regularUser.getId()
+        );
 
         mockMvc.perform(post("/api/appointment")
                         .header("Authorization", "Bearer " + userToken)
@@ -207,13 +207,13 @@ class AppointmentControllerIntegrationTest {
     @Test
     @DisplayName("POST /api/appointment: sin token retorna 401")
     void createAppointment_withoutToken_returns401() throws Exception {
-        com.shift_cut.Model.DTO.AppointmentCreateDTO newAppointment = com.shift_cut.Model.DTO.AppointmentCreateDTO.builder()
-                .typeShift(ServiceType.HAIR_CUT)
-                .date(LocalDate.of(2026, 5, 20))
-                .time(LocalTime.of(14, 0))
-                .barberId(barberUser.getId())
-                .userId(regularUser.getId())
-                .build();
+        com.shift_cut.Model.DTO.AppointmentCreateDTO newAppointment = new com.shift_cut.Model.DTO.AppointmentCreateDTO(
+                ServiceType.HAIR_CUT,
+                LocalDate.of(2026, 5, 20),
+                LocalTime.of(14, 0),
+                barberUser.getId(),
+                regularUser.getId()
+        );
 
         mockMvc.perform(post("/api/appointment")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -226,13 +226,13 @@ class AppointmentControllerIntegrationTest {
     @Test
     @DisplayName("PUT /api/appointment/{id}: ADMIN puede actualizar un turno")
     void updateAppointment_asAdmin_returnsUpdated() throws Exception {
-        com.shift_cut.Model.DTO.AppointmentUpdateDTO updateData = com.shift_cut.Model.DTO.AppointmentUpdateDTO.builder()
-                .typeShift(ServiceType.HAIR_CUT_AND_BEARD)
-                .date(LocalDate.of(2026, 6, 1))
-                .time(LocalTime.of(11, 0))
-                .barberId(barberUser.getId())
-                .userId(regularUser.getId())
-                .build();
+        com.shift_cut.Model.DTO.AppointmentUpdateDTO updateData = new com.shift_cut.Model.DTO.AppointmentUpdateDTO(
+                ServiceType.HAIR_CUT_AND_BEARD,
+                LocalDate.of(2026, 6, 1),
+                LocalTime.of(11, 0),
+                barberUser.getId(),
+                regularUser.getId()
+        );
 
         mockMvc.perform(put("/api/appointment/" + existingAppointment.getId())
                         .header("Authorization", "Bearer " + adminToken)
@@ -245,13 +245,13 @@ class AppointmentControllerIntegrationTest {
     @Test
     @DisplayName("PUT /api/appointment/{id}: USER recibe 403")
     void updateAppointment_asUser_returns403() throws Exception {
-        com.shift_cut.Model.DTO.AppointmentUpdateDTO updateData = com.shift_cut.Model.DTO.AppointmentUpdateDTO.builder()
-                .typeShift(ServiceType.HAIR_CUT_AND_BEARD)
-                .date(LocalDate.of(2026, 6, 1))
-                .time(LocalTime.of(11, 0))
-                .barberId(barberUser.getId())
-                .userId(regularUser.getId())
-                .build();
+        com.shift_cut.Model.DTO.AppointmentUpdateDTO updateData = new com.shift_cut.Model.DTO.AppointmentUpdateDTO(
+                ServiceType.HAIR_CUT_AND_BEARD,
+                LocalDate.of(2026, 6, 1),
+                LocalTime.of(11, 0),
+                barberUser.getId(),
+                regularUser.getId()
+        );
 
         mockMvc.perform(put("/api/appointment/" + existingAppointment.getId())
                         .header("Authorization", "Bearer " + userToken)
