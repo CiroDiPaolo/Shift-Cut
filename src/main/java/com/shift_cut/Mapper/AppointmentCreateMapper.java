@@ -11,8 +11,8 @@ import org.mapstruct.ReportingPolicy;
 public interface AppointmentCreateMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "barber", expression = "java(com.shift_cut.Model.UserEntity.builder().id(dto.getBarberId()).build())")
-    @Mapping(target = "user", expression = "java(com.shift_cut.Model.UserEntity.builder().id(dto.getUserId()).build())")
+    @Mapping(target = "barber", expression = "java(com.shift_cut.Model.UserEntity.builder().id(dto.barberId()).build())")
+    @Mapping(target = "user", expression = "java(com.shift_cut.Model.UserEntity.builder().id(dto.userId()).build())")
     Appointment toEntity(AppointmentCreateDTO dto);
 }
 

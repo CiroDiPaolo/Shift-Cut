@@ -65,7 +65,7 @@ class AuthServiceTest {
         // Stub general para el mapper usado en register (lenient para evitar fallos por stubbings no usados)
         org.mockito.Mockito.lenient().when(authMapper.toEntity(any(RegisterRequest.class))).thenAnswer(inv -> {
             RegisterRequest r = inv.getArgument(0);
-            return UserEntity.builder().username(r.getUsername()).email(r.getEmail()).build();
+            return UserEntity.builder().username(r.username()).email(r.email()).build();
         });
     }
 
@@ -74,9 +74,7 @@ class AuthServiceTest {
     @Test
     @DisplayName("login: retorna token JWT cuando las credenciales son correctas")
     void login_withValidCredentials_returnsToken() {
-        LoginRequest request = new LoginRequest();
-        request.setEmail("juan@user.com");
-        request.setPassword("password123");
+        LoginRequest request = new LoginRequest("juan@user.com", "password123");
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(null);
@@ -86,7 +84,7 @@ class AuthServiceTest {
         AuthResponse response = authService.login(request);
 
         assertThat(response).isNotNull();
-        assertThat(response.getToken()).isEqualTo("mocked-jwt-token");
+        assertThat(response.token()).isEqualTo("mocked-jwt-token");
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(jwtService).generateToken(existingUser);
     }
@@ -94,9 +92,7 @@ class AuthServiceTest {
     @Test
     @DisplayName("login: lanza excepción cuando las credenciales son incorrectas")
     void login_withInvalidCredentials_throwsException() {
-        LoginRequest request = new LoginRequest();
-        request.setEmail("juan@user.com");
-        request.setPassword("wrongPassword");
+        LoginRequest request = new LoginRequest("juan@user.com", "wrongPassword");
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new BadCredentialsException("Credenciales incorrectas"));
@@ -112,10 +108,7 @@ class AuthServiceTest {
     @Test
     @DisplayName("register: registra nuevo usuario y retorna token JWT")
     void register_withValidData_returnsToken() {
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("nuevousuario");
-        request.setEmail("nuevo@user.com");
-        request.setPassword("pass123");
+        RegisterRequest request = new RegisterRequest("nuevousuario", "nuevo@user.com", "pass123");
 
         when(userEntityService.findByEmailOptional("nuevo@user.com")).thenReturn(Optional.empty());
         when(userEntityService.findByUsernameOptional("nuevousuario")).thenReturn(Optional.empty());
@@ -126,7 +119,7 @@ class AuthServiceTest {
         AuthResponse response = authService.register(request);
 
         assertThat(response).isNotNull();
-        assertThat(response.getToken()).isEqualTo("new-jwt-token");
+        assertThat(response.token()).isEqualTo("new-jwt-token");
         verify(userEntityService).createUserEntity(any(UserEntity.class));
         verify(jwtService).generateToken(any(UserEntity.class));
     }
@@ -134,10 +127,7 @@ class AuthServiceTest {
     @Test
     @DisplayName("register: lanza UserAlreadyExistsException si el email ya está registrado")
     void register_withExistingEmail_throwsException() {
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("nuevousuario");
-        request.setEmail("juan@user.com");
-        request.setPassword("pass123");
+        RegisterRequest request = new RegisterRequest("nuevousuario", "juan@user.com", "pass123");
 
         when(userEntityService.findByEmailOptional("juan@user.com")).thenReturn(Optional.of(existingUser));
 
@@ -151,10 +141,7 @@ class AuthServiceTest {
     @Test
     @DisplayName("register: lanza UserAlreadyExistsException si el username ya está registrado")
     void register_withExistingUsername_throwsException() {
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("juanperez");
-        request.setEmail("nuevo@user.com");
-        request.setPassword("pass123");
+        RegisterRequest request = new RegisterRequest("juanperez", "nuevo@user.com", "pass123");
 
         when(userEntityService.findByEmailOptional("nuevo@user.com")).thenReturn(Optional.empty());
         when(userEntityService.findByUsernameOptional("juanperez")).thenReturn(Optional.of(existingUser));
@@ -169,10 +156,7 @@ class AuthServiceTest {
     @Test
     @DisplayName("register: el nuevo usuario siempre tiene rol USER")
     void register_newUser_hasRoleUser() {
-        RegisterRequest request = new RegisterRequest();
-        request.setUsername("nuevousuario");
-        request.setEmail("nuevo@user.com");
-        request.setPassword("pass123");
+        RegisterRequest request = new RegisterRequest("nuevousuario", "nuevo@user.com", "pass123");
 
         when(userEntityService.findByEmailOptional("nuevo@user.com")).thenReturn(Optional.empty());
         when(userEntityService.findByUsernameOptional("nuevousuario")).thenReturn(Optional.empty());

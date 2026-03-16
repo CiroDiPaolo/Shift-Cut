@@ -27,26 +27,24 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(request.email(), request.password())
         );
 
-        UserDetails user = userService.getByEmailOrThrow(request.getEmail());
-        return AuthResponse.builder()
-                .token(jwtService.generateToken(user))
-                .build();
+        UserDetails user = userService.getByEmailOrThrow(request.email());
+        return new AuthResponse(jwtService.generateToken(user));
     }
 
     public AuthResponse register(RegisterRequest request) {
         // Validación previa para evitar duplicados
-        if (userService.findByEmailOptional(request.getEmail()).isPresent()) {
+        if (userService.findByEmailOptional(request.email()).isPresent()) {
             throw new UserAlreadyExistsException("El email ya está registrado");
         }
-        if (userService.findByUsernameOptional(request.getUsername()).isPresent()) {
+        if (userService.findByUsernameOptional(request.username()).isPresent()) {
             throw new UserAlreadyExistsException("El nombre de usuario ya está registrado");
         }
 
         UserEntity user = authMapper.toEntity(request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(Role.USER);
         user.setStatus(true);
 
@@ -55,9 +53,7 @@ public class AuthService {
         } catch (DataIntegrityViolationException e) {
             throw new UserAlreadyExistsException("El email o nombre de usuario ya está registrado");
         }
-        return AuthResponse.builder()
-                .token(jwtService.generateToken(user))
-                .build();
+        return new AuthResponse(jwtService.generateToken(user));
     }
 
 }

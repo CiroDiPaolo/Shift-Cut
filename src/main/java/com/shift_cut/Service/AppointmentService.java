@@ -48,10 +48,10 @@ public class AppointmentService {
 
     public AppointmentDTO createAppointment(AppointmentCreateDTO dto) {
         // Primero validar existencia de barber y user y el rol del barber
-        UserEntity user = userRepo.findById(dto.getUserId())
-                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.getUserId()));
-        UserEntity barber = userRepo.findById(dto.getBarberId())
-                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.getBarberId()));
+        UserEntity user = userRepo.findById(dto.userId())
+                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.userId()));
+        UserEntity barber = userRepo.findById(dto.barberId())
+                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.barberId()));
 
         // Validar rol de barber antes de construir la entidad
         if (barber.getRole() != com.shift_cut.Model.Enum.Role.BARBER) {
@@ -62,9 +62,9 @@ public class AppointmentService {
         Appointment appointment = createMapper.toEntity(dto);
         if (appointment == null) {
             appointment = Appointment.builder()
-                    .typeShift(dto.getTypeShift())
-                    .date(dto.getDate())
-                    .time(dto.getTime())
+                    .typeShift(dto.typeShift())
+                    .date(dto.date())
+                    .time(dto.time())
                     .build();
         }
 
@@ -89,10 +89,10 @@ public class AppointmentService {
         // aplicar cambios sobre la entidad existente
         updateMapper.updateFromDto(dto, existing);
         // Validar existencia de barber y user y asignar las entidades gestionadas
-        UserEntity user = userRepo.findById(dto.getUserId())
-                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.getUserId()));
-        UserEntity barber = userRepo.findById(dto.getBarberId())
-                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.getBarberId()));
+        UserEntity user = userRepo.findById(dto.userId())
+                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.userId()));
+        UserEntity barber = userRepo.findById(dto.barberId())
+                .orElseThrow(() -> new UserNotFound("User not found with id: " + dto.barberId()));
 
         // Validar rol de barber
         if (barber.getRole() != com.shift_cut.Model.Enum.Role.BARBER) {

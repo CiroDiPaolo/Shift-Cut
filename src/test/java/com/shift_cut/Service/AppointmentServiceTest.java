@@ -90,26 +90,26 @@ class AppointmentServiceTest {
     void getAppointmentById_whenExists_returnsDTO() {
         when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment));
         // mappear manualmente el comportamiento esperado del mapper
-        when(appointmentMapper.toDto(appointment)).thenReturn(AppointmentDTO.builder()
-                .id(1L)
-                .typeShift(ServiceType.HAIR_CUT)
-                .barberId(1L)
-                .barberUsername("carlossanchez")
-                .userId(2L)
-                .userUsername("juanperez")
-                .date(LocalDate.of(2026,4,10))
-                .time(LocalTime.of(10,30))
-                .build());
+        when(appointmentMapper.toDto(appointment)).thenReturn(new AppointmentDTO(
+                1L,
+                ServiceType.HAIR_CUT,
+                LocalDate.of(2026,4,10),
+                LocalTime.of(10,30),
+                1L,
+                "carlossanchez",
+                2L,
+                "juanperez"
+        ));
 
         AppointmentDTO result = appointmentService.getAppointmentById(1L);
 
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getTypeShift()).isEqualTo(ServiceType.HAIR_CUT);
-        assertThat(result.getBarberId()).isEqualTo(1L);
-        assertThat(result.getUserId()).isEqualTo(2L);
-        assertThat(result.getBarberUsername()).isEqualTo("carlossanchez");
-        assertThat(result.getUserUsername()).isEqualTo("juanperez");
+        assertThat(result.id()).isEqualTo(1L);
+        assertThat(result.typeShift()).isEqualTo(ServiceType.HAIR_CUT);
+        assertThat(result.barberId()).isEqualTo(1L);
+        assertThat(result.userId()).isEqualTo(2L);
+        assertThat(result.barberUsername()).isEqualTo("carlossanchez");
+        assertThat(result.userUsername()).isEqualTo("juanperez");
         verify(appointmentRepository).findById(1L);
     }
 
@@ -129,12 +129,12 @@ class AppointmentServiceTest {
     @DisplayName("getAllAppointments: retorna lista completa de DTOs")
     void getAllAppointments_returnsList() {
         when(appointmentRepository.findAll()).thenReturn(List.of(appointment));
-        when(appointmentMapper.toDto(appointment)).thenReturn(AppointmentDTO.builder().id(1L).build());
+        when(appointmentMapper.toDto(appointment)).thenReturn(new AppointmentDTO(1L, null, null, null, null, null, null, null));
 
         List<AppointmentDTO> result = appointmentService.getAllAppointments();
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getId()).isEqualTo(1L);
+        assertThat(result.get(0).id()).isEqualTo(1L);
         verify(appointmentRepository).findAll();
     }
 
@@ -154,12 +154,12 @@ class AppointmentServiceTest {
     @DisplayName("getAppointmentsByUserId: retorna turnos del usuario indicado")
     void getAppointmentsByUserId_returnsList() {
         when(appointmentRepository.findByUser_Id(2L)).thenReturn(List.of(appointment));
-        when(appointmentMapper.toDto(appointment)).thenReturn(AppointmentDTO.builder().userId(2L).build());
+        when(appointmentMapper.toDto(appointment)).thenReturn(new AppointmentDTO(null, null, null, null, null, null, 2L, null));
 
         List<AppointmentDTO> result = appointmentService.getAppointmentsByUserId(2L);
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getUserId()).isEqualTo(2L);
+        assertThat(result.get(0).userId()).isEqualTo(2L);
         verify(appointmentRepository).findByUser_Id(2L);
     }
 
@@ -179,26 +179,26 @@ class AppointmentServiceTest {
     @DisplayName("createAppointment: guarda y retorna DTO correctamente")
     void createAppointment_savesAndReturnsDTO() {
         when(appointmentRepository.save(appointment)).thenReturn(appointment);
-        when(appointmentMapper.toDto(appointment)).thenReturn(AppointmentDTO.builder().id(1L).typeShift(ServiceType.HAIR_CUT).build());
+        when(appointmentMapper.toDto(appointment)).thenReturn(new AppointmentDTO(1L, ServiceType.HAIR_CUT, null, null, null, null, null, null));
 
         AppointmentDTO result = appointmentService.createAppointment(appointment);
 
         assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(1L);
-        assertThat(result.getTypeShift()).isEqualTo(ServiceType.HAIR_CUT);
+        assertThat(result.id()).isEqualTo(1L);
+        assertThat(result.typeShift()).isEqualTo(ServiceType.HAIR_CUT);
         verify(appointmentRepository).save(appointment);
     }
 
     @Test
     @DisplayName("createAppointment: lanza UserNotFound si el user no existe")
     void createAppointment_whenUserNotFound_throwsUserNotFound() {
-        com.shift_cut.Model.DTO.AppointmentCreateDTO dto = com.shift_cut.Model.DTO.AppointmentCreateDTO.builder()
-                .typeShift(ServiceType.HAIR_CUT)
-                .date(LocalDate.of(2026,4,10))
-                .time(LocalTime.of(10,30))
-                .barberId(1L)
-                .userId(99L)
-                .build();
+        com.shift_cut.Model.DTO.AppointmentCreateDTO dto = new com.shift_cut.Model.DTO.AppointmentCreateDTO(
+                ServiceType.HAIR_CUT,
+                LocalDate.of(2026,4,10),
+                LocalTime.of(10,30),
+                1L,
+                99L
+        );
 
         when(userEntityRepository.findById(99L)).thenReturn(Optional.empty());
 
@@ -212,13 +212,13 @@ class AppointmentServiceTest {
     @Test
     @DisplayName("createAppointment: lanza UserIsNotBarberException si el barber no tiene rol BARBER")
     void createAppointment_whenBarberNotBarber_throwsException() {
-        com.shift_cut.Model.DTO.AppointmentCreateDTO dto = com.shift_cut.Model.DTO.AppointmentCreateDTO.builder()
-                .typeShift(ServiceType.HAIR_CUT)
-                .date(LocalDate.of(2026,4,10))
-                .time(LocalTime.of(10,30))
-                .barberId(2L)
-                .userId(2L)
-                .build();
+        com.shift_cut.Model.DTO.AppointmentCreateDTO dto = new com.shift_cut.Model.DTO.AppointmentCreateDTO(
+                ServiceType.HAIR_CUT,
+                LocalDate.of(2026,4,10),
+                LocalTime.of(10,30),
+                2L,
+                2L
+        );
 
         UserEntity notBarber = UserEntity.builder().id(2L).role(Role.USER).build();
         when(userEntityRepository.findById(2L)).thenReturn(Optional.of(notBarber));
@@ -233,13 +233,13 @@ class AppointmentServiceTest {
     @Test
     @DisplayName("updateAppointment: actualiza y retorna DTO cuando el turno existe")
     void updateAppointment_whenExists_returnsUpdatedDTO() {
-        AppointmentUpdateDTO updated = AppointmentUpdateDTO.builder()
-                .typeShift(ServiceType.HAIR_CUT_AND_BEARD)
-                .date(LocalDate.of(2026, 5, 1))
-                .time(LocalTime.of(14, 0))
-                .barberId(barber.getId())
-                .userId(client.getId())
-                .build();
+        AppointmentUpdateDTO updated = new AppointmentUpdateDTO(
+                ServiceType.HAIR_CUT_AND_BEARD,
+                LocalDate.of(2026, 5, 1),
+                LocalTime.of(14, 0),
+                barber.getId(),
+                client.getId()
+        );
 
         Appointment savedUpdated = Appointment.builder()
                 .id(1L)
@@ -256,11 +256,11 @@ class AppointmentServiceTest {
         when(userEntityRepository.findById(barber.getId())).thenReturn(Optional.of(barber));
 
         when(appointmentRepository.save(any(Appointment.class))).thenReturn(savedUpdated);
-        when(appointmentMapper.toDto(savedUpdated)).thenReturn(AppointmentDTO.builder().typeShift(ServiceType.HAIR_CUT_AND_BEARD).build());
+        when(appointmentMapper.toDto(savedUpdated)).thenReturn(new AppointmentDTO(null, ServiceType.HAIR_CUT_AND_BEARD, null, null, null, null, null, null));
 
         AppointmentDTO result = appointmentService.updateAppointment(1L, updated);
 
-        assertThat(result.getTypeShift()).isEqualTo(ServiceType.HAIR_CUT_AND_BEARD);
+        assertThat(result.typeShift()).isEqualTo(ServiceType.HAIR_CUT_AND_BEARD);
         verify(appointmentRepository).findById(1L);
         verify(appointmentRepository).save(any(Appointment.class));
     }
@@ -270,13 +270,13 @@ class AppointmentServiceTest {
     void updateAppointment_whenNotExists_throwsException() {
         when(appointmentRepository.findById(99L)).thenReturn(Optional.empty());
 
-        AppointmentUpdateDTO dto = AppointmentUpdateDTO.builder()
-                .typeShift(ServiceType.HAIR_CUT)
-                .date(LocalDate.of(2026, 4, 10))
-                .time(LocalTime.of(10, 30))
-                .barberId(1L)
-                .userId(2L)
-                .build();
+        AppointmentUpdateDTO dto = new AppointmentUpdateDTO(
+                ServiceType.HAIR_CUT,
+                LocalDate.of(2026, 4, 10),
+                LocalTime.of(10, 30),
+                1L,
+                2L
+        );
 
         assertThatThrownBy(() -> appointmentService.updateAppointment(99L, dto))
                 .isInstanceOf(AppointmentNotFound.class)
@@ -288,13 +288,13 @@ class AppointmentServiceTest {
     @Test
     @DisplayName("updateAppointment: lanza UserNotFound si el barber no existe")
     void updateAppointment_whenBarberNotFound_throwsUserNotFound() {
-        AppointmentUpdateDTO dto = AppointmentUpdateDTO.builder()
-                .typeShift(ServiceType.HAIR_CUT)
-                .date(LocalDate.of(2026, 4, 10))
-                .time(LocalTime.of(10, 30))
-                .barberId(99L)
-                .userId(2L)
-                .build();
+        AppointmentUpdateDTO dto = new AppointmentUpdateDTO(
+                ServiceType.HAIR_CUT,
+                LocalDate.of(2026, 4, 10),
+                LocalTime.of(10, 30),
+                99L,
+                2L
+        );
 
         when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment));
         when(userEntityRepository.findById(2L)).thenReturn(Optional.of(client));
@@ -311,13 +311,13 @@ class AppointmentServiceTest {
     @Test
     @DisplayName("updateAppointment: lanza UserIsNotBarberException si el barber no tiene rol BARBER")
     void updateAppointment_whenBarberNotBarber_throwsException() {
-        AppointmentUpdateDTO dto = AppointmentUpdateDTO.builder()
-                .typeShift(ServiceType.HAIR_CUT)
-                .date(LocalDate.of(2026, 4, 10))
-                .time(LocalTime.of(10, 30))
-                .barberId(2L)
-                .userId(2L)
-                .build();
+        AppointmentUpdateDTO dto = new AppointmentUpdateDTO(
+                ServiceType.HAIR_CUT,
+                LocalDate.of(2026, 4, 10),
+                LocalTime.of(10, 30),
+                2L,
+                2L
+        );
 
         when(appointmentRepository.findById(1L)).thenReturn(Optional.of(appointment));
         when(userEntityRepository.findById(2L)).thenReturn(Optional.of(UserEntity.builder().id(2L).role(Role.USER).build()));
