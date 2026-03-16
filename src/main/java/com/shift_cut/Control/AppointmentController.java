@@ -1,6 +1,7 @@
 package com.shift_cut.Control;
 
 import com.shift_cut.Model.Appointment;
+import com.shift_cut.Model.DTO.AppointmentCreateDTO;
 import com.shift_cut.Model.DTO.AppointmentDTO;
 import com.shift_cut.Service.AppointmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -67,9 +68,9 @@ public class AppointmentController {
         @ApiResponse(responseCode = "400", description = "Datos inválidos", content = @Content)
     })
     public ResponseEntity<AppointmentDTO> createAppointment(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos del turno a crear", required = true, content = @Content(schema = @Schema(implementation = Appointment.class)))
-            @RequestBody Appointment appointment) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.createAppointment(appointment));
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos del turno a crear", required = true, content = @Content(schema = @Schema(implementation = AppointmentCreateDTO.class)))
+            @jakarta.validation.Valid @RequestBody AppointmentCreateDTO appointmentCreateDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.createAppointment(appointmentCreateDTO));
     }
 
     @PutMapping("/{id}")
@@ -81,9 +82,9 @@ public class AppointmentController {
     })
     public ResponseEntity<AppointmentDTO> updateAppointment(
             @Parameter(description = "ID del turno a actualizar", example = "1") @PathVariable Long id,
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos del turno a actualizar", required = true, content = @Content(schema = @Schema(implementation = Appointment.class)))
-            @RequestBody Appointment appointment) {
-        return ResponseEntity.ok(service.updateAppointment(id, appointment));
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Datos del turno a actualizar", required = true, content = @Content(schema = @Schema(implementation = com.shift_cut.Model.DTO.AppointmentUpdateDTO.class)))
+            @jakarta.validation.Valid @RequestBody com.shift_cut.Model.DTO.AppointmentUpdateDTO appointmentUpdateDTO) {
+        return ResponseEntity.ok(service.updateAppointment(id, appointmentUpdateDTO));
     }
 
     @DeleteMapping("/{id}")

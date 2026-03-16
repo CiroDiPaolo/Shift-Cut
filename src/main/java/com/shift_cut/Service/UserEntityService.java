@@ -2,6 +2,7 @@ package com.shift_cut.Service;
 
 import com.shift_cut.Exceptions.UserNotFound;
 import com.shift_cut.Exceptions.UserAlreadyExistsException;
+import com.shift_cut.Mapper.UserMapper;
 import com.shift_cut.Model.DTO.UserDTO;
 import com.shift_cut.Model.UserEntity;
 import com.shift_cut.Repository.UserEntityRepository;
@@ -22,25 +23,16 @@ public class UserEntityService {
 
     private final UserEntityRepository repo;
     private final PasswordEncoder passwordEncoder;
-
-    private UserDTO toDTO(UserEntity user) {
-        return UserDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .status(user.isStatus())
-                .build();
-    }
+    private final UserMapper mapper;
 
     public UserDTO getUserEntityById(Long id) {
         UserEntity user = repo.findById(id)
                 .orElseThrow(() -> new UserNotFound("User not found with id: " + id));
-        return toDTO(user);
+        return mapper.toDto(user);
     }
 
     public List<UserDTO> getAllUsers() {
-        return repo.findAll().stream().map(this::toDTO).toList();
+        return repo.findAll().stream().map(mapper::toDto).toList();
     }
 
     public UserDTO getCurrentUser() {
@@ -54,11 +46,11 @@ public class UserEntityService {
         Object principal = authentication.getPrincipal();
 
         if (principal instanceof UserEntity userEntity) {
-            return toDTO(userEntity);
+            return mapper.toDto(userEntity);
         }
 
         if (principal instanceof UserDetails userDetails) {
-            return toDTO(getByEmailOrThrow(userDetails.getUsername()));
+            return mapper.toDto(getByEmailOrThrow(userDetails.getUsername()));
         }
 
         throw new UserNotFound("Authenticated principal not recognized");
@@ -67,11 +59,11 @@ public class UserEntityService {
     public UserDTO getUserByUsername(String username) {
         UserEntity user = repo.findByUsername(username)
                 .orElseThrow(() -> new UserNotFound("User not found with username: " + username));
-        return toDTO(user);
+        return mapper.toDto(user);
     }
 
     public UserDTO getUserByEmailDTO(String email) {
-        return toDTO(getByEmailOrThrow(email));
+        return mapper.toDto(getByEmailOrThrow(email));
     }
 
     public Optional<UserEntity> findByEmailOptional(String email) {
@@ -145,7 +137,7 @@ public class UserEntityService {
         } else {
             throw new SecurityException("No autorizado para modificar este usuario");
         }
-        return toDTO(repo.save(existing));
+        return mapper.toDto(repo.save(existing));
     }
 
     public void deleteUserEntity(Long id) {
